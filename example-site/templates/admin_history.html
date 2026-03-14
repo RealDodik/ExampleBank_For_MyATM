@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>History — {{ target_user.username }}</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f0f0; margin: 0; }
+        nav { background: #0a2a5e; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+        nav a { color: #c9a84c; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+        nav .back { color: rgba(255,255,255,.7); font-size: .85rem; font-weight: 400; }
+        .page { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+        .user-card { background: #fff; border: 1px solid #d6dff0; border-radius: 8px; padding: 18px 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .avatar { width: 44px; height: 44px; border-radius: 50%; background: #0a2a5e; color: #c9a84c; font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .meta h2 { margin: 0 0 4px; font-size: 1.2rem; color: #0a2a5e; }
+        .meta p { margin: 0; font-size: .82rem; color: #6b7a99; }
+        .meta p strong { color: #1a2640; }
+        .bal { margin-left: auto; font-size: 1.6rem; font-weight: 700; color: #0a2a5e; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #d6dff0; }
+        th { background: #0a2a5e; color: rgba(255,255,255,.75); font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; padding: 11px 14px; text-align: left; }
+        td { padding: 10px 14px; font-size: .87rem; border-bottom: 1px solid #d6dff0; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        .out { color: #c0392b; font-weight: 700; }
+        .in  { color: #1a7a45; font-weight: 700; }
+        .muted { font-size: .75rem; color: #6b7a99; display: block; }
+        .btn-del { background: none; border: 1.5px solid #fccaca; color: #c0392b; border-radius: 5px; padding: 4px 10px; cursor: pointer; font-size: .82rem; }
+        .btn-del:hover { background: #fee2e2; }
+        .cvv { cursor: pointer; font-weight: 700; }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/">GLBank</a>
+    <a href="/admin" class="back">← Admin Panel</a>
+</nav>
+<div class="page">
+
+    <div class="user-card">
+        <div class="avatar">{{ target_user.username[0].upper() }}</div>
+        <div class="meta">
+            <h2>{{ target_user.username }}</h2>
+            <p>Account: <strong>#{{ target_user.account_number }}</strong></p>
+            {% if card %}
+            <p>
+                Card: <strong style="font-family:monospace;">
+                    {{ card.card_number[0:4] }} **** **** {{ card.card_number[12:16] }}
+                </strong>
+                &nbsp; CVV: <span class="cvv"
+                    onclick="this.textContent=this.textContent==='•••'?'{{ card.cvv }}':'•••'">•••</span>
+            </p>
+            {% else %}
+            <p>No card</p>
+            {% endif %}
+        </div>
+        <div class="bal">{{ target_user.balance }} DC</div>
+    </div>
+
+    <table>
+        <thead><tr><th>Date</th><th>From</th><th>To</th><th>Amount</th><th></th></tr></thead>
+        <tbody>
+        {% for tx in history %}
+        <tr>
+            <td>{{ tx.date.strftime('%Y-%m-%d') }}<span class="muted">{{ tx.date.strftime('%H:%M') }}</span></td>
+            <td>
+                {% if tx.sender == 'BANK' %}Bank deposit
+                {% else %}{{ accounts.get(tx.sender, tx.sender) }}<span class="muted">#{{ tx.sender }}</span>{% endif %}
+            </td>
+            <td>
+                {% if tx.receiver == 'BANK' %}Bank withdrawal
+                {% else %}{{ accounts.get(tx.receiver, tx.receiver) }}<span class="muted">#{{ tx.receiver }}</span>{% endif %}
+            </td>
+            <td>
+                {% if tx.sender == target_user.account_number %}
+                    <span class="out">−{{ tx.amount }}</span>
+                {% else %}
+                    <span class="in">+{{ tx.amount }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <form action="/admin/delete_tx/{{ tx.id }}/{{ target_user.id }}" method="POST">
+                    <button class="btn-del" onclick="return confirm('Delete this transaction?')">Del</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
