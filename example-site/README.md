@@ -29,7 +29,7 @@ Register an account with the username `Admin` — it will have access to the adm
 
 | Endpoint | Called by |
 |---|---|
-| `POST /api/atm` | ATM block — generates/retrieves a card |
+| `POST /api/card_linker` | Card Linker block — generates/retrieves a card |
 | `POST /api/terminal` | Terminal block — processes a payment |
 
 See `app.py` for the full request/response format.

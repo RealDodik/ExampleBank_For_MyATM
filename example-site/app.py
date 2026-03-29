@@ -250,15 +250,15 @@ def admin_delete_tx(tx_id, uid):
 def check_key(data):
     return data.get('api_password') == ATM_API_KEY
 
-@app.route('/api/atm', methods=['POST'])
+@app.route('/api/card_linker', methods=['POST'])
 def api_atm():
     """
-    Called by the ATM block in-game.
-    Body: { api_password, type="ATM", login, password, pin }
+    Called by the Card Linker block in-game.
+    Body: { api_password, type="CARD_LINKER", login, password, pin }
     Returns: { success, card_number, cvv } or { success: false, message }
     """
     data = request.get_json(silent=True)
-    if not data or not check_key(data) or data.get('type') != 'ATM':
+    if not data or not check_key(data) or data.get('type') != 'CARD_LINKER':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
 
     login    = data.get('login', '').strip()
